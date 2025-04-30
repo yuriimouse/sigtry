@@ -1,0 +1,9 @@
+services:
+  sigtry:
+    container_name: sigtry
+    build: .
+    volumes:
+      - ../:/sigtry
+    entrypoint: /bin/bash
+    stdin_open: true
+    tty: true
