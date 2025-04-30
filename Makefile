@@ -3,7 +3,8 @@ CFLAGS = -Wall -Wextra -O2
 TARGET = test_sigtry
 SRC = main.c
 
-all: $(TARGET)
+.PHONY: all clean
+all: clean $(TARGET)
 
 $(TARGET): $(SRC)
 	$(CC) $(CFLAGS) -o $@ $^
