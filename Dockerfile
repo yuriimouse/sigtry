@@ -1,9 +1,14 @@
-FROM rockylinux/rockylinux:latest
+FROM ubuntu:latest
 
-# gcc
-RUN dnf install gcc -y
+# 
+ENV DEBIAN_FRONTEND=noninteractive
 
-# make
-RUN dnf install epel-release -y
-RUN dnf install make findutils autoconf automake libtool -y
-RUN dnf --enablerepo=devel install binutils -y
+# 
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    make \
+    git \
+    valgrind \
+    libcunit1 \
+    libcunit1-dev

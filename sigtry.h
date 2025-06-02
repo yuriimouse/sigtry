@@ -1,10 +1,19 @@
 #ifndef SIGTRY_H
 #define SIGTRY_H
 
+/**
+ * @file sigtry.h
+ * @author <github.com/yuriimouse>
+ * @brief Try/Catch and Signal macros for signal handling via sigsetjmp/siglongjmp
+ * @version 1.2
+ * @date 2025-06-02
+ */
+
 #define _GNU_SOURCE
 #include <setjmp.h>
 #include <signal.h>
 #include <stddef.h>
+#include <string.h>
 
 #define SIGTRY_MAX_SIGNALS 16
 
@@ -30,6 +39,8 @@ static void _sigtry_dispatcher(int sig)
     do                                                                        \
     {                                                                         \
         _sigtry_ctx.num_signals = 0;                                          \
+        _sigtry_ctx.fired = 0;                                                \
+        _sigtry_ctx.caught_signal = 0;                                        \
         int _sigs[] = {__VA_ARGS__};                                          \
         size_t _sig_count = sizeof(_sigs) / sizeof(int);                      \
         for (size_t _i = 0; _i < _sig_count && _i < SIGTRY_MAX_SIGNALS; ++_i) \
@@ -42,19 +53,31 @@ static void _sigtry_dispatcher(int sig)
             sigaction(_sigs[_i], &_new_action, &_sigtry_ctx.old_actions[_i]); \
             _sigtry_ctx.num_signals++;                                        \
         }                                                                     \
-        _sigtry_ctx.fired = 0;                                                \
         if (sigsetjmp(_sigtry_ctx.env, 1) == 0)
 
 #define Catch                                                                           \
     else for (size_t _j = 0; _j < _sigtry_ctx.num_signals; ++_j)                        \
         sigaction(_sigtry_ctx.watched_signals[_j], &_sigtry_ctx.old_actions[_j], NULL); \
     }                                                                                   \
-    while (0)                                                                           \
-        ;
+    while (0)
 
 #define On(sig) \
-    if (0 == _sigtry_ctx.fired && _sigtry_ctx.caught_signal == (sig) && ((_sigtry_ctx.fired = 1)))
+    if (!_sigtry_ctx.fired && _sigtry_ctx.caught_signal == (sig) && ((_sigtry_ctx.fired = 1), 1))
+
 #define Default \
-    if (0 == _sigtry_ctx.fired)
+    if (!_sigtry_ctx.fired)
+
+#define Signal(sig)                                               \
+    static void handle_##sig(int signum __attribute__((unused))); \
+    __attribute__((constructor)) static void register_##sig(void) \
+    {                                                             \
+        struct sigaction sa;                                      \
+        memset(&sa, 0, sizeof(sa));                               \
+        sa.sa_handler = handle_##sig;                             \
+        sigemptyset(&sa.sa_mask);                                 \
+        sa.sa_flags = SA_RESTART;                                 \
+        sigaction(sig, &sa, NULL);                                \
+    }                                                             \
+    static void handle_##sig(int signum __attribute__((unused)))
 
 #endif // SIGTRY_H

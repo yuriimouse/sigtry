@@ -1,9 +1,10 @@
+// main.c
 #include "sigtry.h"
-#include "sigwrap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+// Register global signal handlers
 Signal(SIGINT) {
     printf("Caught global SIGINT (Ctrl+C)\n");
 }
@@ -19,9 +20,9 @@ int main()
     Try(SIGINT, SIGTERM, SIGSEGV)
     {
         printf("Inside Try block\n");
-        raise(SIGINT);
+        raise(SIGINT); // Local SIGINT inside Try block
         // char *str = NULL;
-        // *str = '!';
+        // *str = '!'; // Uncomment to test SIGSEGV
         printf("This line will not be printed if signal occurs.\n");
     }
     Catch
@@ -44,8 +45,11 @@ int main()
         }
     }
 
-    raise(SIGINT);
+    raise(SIGINT); // Global SIGINT (outside Try)
 
     printf("After Try/Catch block\n");
+    printf("Now sleeping... Press Ctrl+C to test global SIGINT handler.\n");
+    sleep(5);
+
     return 0;
 }

@@ -1,0 +1,26 @@
+# .github/workflows/build.yml
+name: Build & Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build the project
+        run: make
+
+      - name: Run the binary
+        run: ./test_sigtry || true  # allow exit due to signals
