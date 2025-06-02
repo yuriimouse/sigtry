@@ -64,4 +64,4 @@ Signal(SIGINT) {
 ## 📄 License
 
 MIT License
-© 2025 Yurii Prudius (GitHub)[https://github.com/yuriimouse/sigtry]
+© 2025 (https://github.com/yuriimouse/sigtry)
